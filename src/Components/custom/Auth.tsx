@@ -34,6 +34,8 @@ const Auth = (): JSX.Element => {
  const [loginError,setLoginError] = useState<string>("");
  const [registerError,setRegisterError] = useState<string>("");
  const [loading,setLoading] = useState(false);
+ const [showLoginPwd, setShowLoginPwd] = useState(false);
+ const [showRegisterPwd, setShowRegisterPwd] = useState(false);
 
  const {showAuth} = useSelector((state: RootState) => state.auth);
  const dispatch: AppDispatch = useDispatch();
@@ -118,19 +120,23 @@ const Auth = (): JSX.Element => {
 	  autoCapitalize="none"
 	  onChangeText={(text) => handleLogin(text,"email")}
 	 />
-	 <TextInput
-	  className={input}
-	  cursorColor={"#999"}
-	  placeholder='Passsword'
-	  autoCapitalize="none"
-	  onChangeText={(text) => handleLogin(text,"password")}
-	  secureTextEntry
-	 />
-	{loginError && (
-	 <Text className='font-inter_500 text-red-500'>
-	 {loginError}
-	 </Text>
-	)}
+	 <View className="relative">
+	  <TextInput
+	   className={input}
+	   cursorColor={"#999"}
+	   placeholder='Passsword'
+	   autoCapitalize="none"
+	   onChangeText={(text) => handleLogin(text,"password")}
+	   secureTextEntry={showLoginPwd}
+	  />
+	  <Pressable 
+	   className="h-full w-12 right-0 top-0 absolute justify-center items-center"
+	   onPress={() => setShowLoginPwd(prev => !prev)}
+	  >
+	   {showLoginPwd ? <Feather name="eye" size={20} color={"#999"} /> : <Feather name="eye-off" size={20} color={"#999"} />}
+	  </Pressable>
+	 </View>
+	 {loginError && <Text className='font-inter_500 text-red-500'>{loginError}</Text>}
  	 <TouchableOpacity
  	  className='p-4 rounded-md shadow-lg flex-row justify-center space-x-2'
 	  style={{backgroundColor: "rgb(82, 137, 192)"}}
@@ -140,49 +146,53 @@ const Auth = (): JSX.Element => {
 	  {loading && <ActivityIndicator size={"small"} color={"#fff"} />}
 	 </TouchableOpacity>
      </View>
- 	 </View>
-		<View key='2'>
-		 <View className='w-[90%] mx-auto p-2 space-y-3 justify-center flex-1'>
-		  <TextInput
-		   className={input}
-		   cursorColor={"#999"}
-	       autoCapitalize="none"
-		   placeholder='Name'
-		   onChangeText={(text) => handleRegister(text,"name")}
-		  />
-		  <TextInput
-		   className={input}
-		   cursorColor={"#999"}
-	       autoCapitalize="none"
-		   placeholder='Email'
-		   onChangeText={(text) => handleRegister(text,"email")}
-		  />
-		  <TextInput
-		   className={input}
-		   cursorColor={"#999"}
-		   placeholder='Password'
-	       autoCapitalize="none"
-		   onChangeText={(text) => handleRegister(text,"password")}
-		   secureTextEntry
-	   	  />
-		 {registerError && (
-		  <Text className='font-inter_500 text-red-500'>
-		  {registerError}
-		  </Text>
-		 )}
-		 <TouchableOpacity
- 	      className='p-4 rounded-md shadow-lg'
-		  style={{backgroundColor: "rgb(82, 137, 192)"}}
-		  onPress={handleSubmit}
-		 > 
-	      {!loading && <Text className='text-center text-white font-inter_600'>Sign Up</Text>}
-	      {loading && <ActivityIndicator size={"small"} color={"#fff"} />}
-		 </TouchableOpacity>
-	    </View>
+ 	</View>
+	<View key='2'>
+	 <View className='w-[90%] mx-auto p-2 space-y-3 justify-center flex-1'>
+	  <TextInput
+	   className={input}
+	   cursorColor={"#999"}
+	   autoCapitalize="none"
+	   placeholder='Name'
+	   onChangeText={(text) => handleRegister(text,"name")}
+	  />
+	  <TextInput
+	   className={input}
+	   cursorColor={"#999"}
+	   autoCapitalize="none"
+	   placeholder='Email'
+	   onChangeText={(text) => handleRegister(text,"email")}
+	  />
+	  <View className="relative">
+	   <TextInput
+	    className={input}
+	    cursorColor={"#999"}
+	    placeholder='Password'
+	    autoCapitalize="none"
+	    onChangeText={(text) => handleRegister(text,"password")}
+	    secureTextEntry={showRegisterPwd}
+	   />
+	  <Pressable 
+	   className="h-full w-12 right-0 top-0 absolute justify-center items-center"
+	   onPress={() => setShowRegisterPwd(prev => !prev)}
+	  >
+	   {showRegisterPwd ? <Feather name="eye" size={20} color={"#999"} /> : <Feather name="eye-off" size={20} color={"#999"} />}
+	  </Pressable>
 	  </View>
-	 </PagerView>
+	  {registerError && <Text className='font-inter_500 text-red-500'>{registerError}</Text>}
+	  <TouchableOpacity
+ 	   className='p-4 rounded-md shadow-lg'
+	   style={{backgroundColor: "rgb(82, 137, 192)"}}
+	   onPress={handleSubmit}
+	  > 
+	   {!loading && <Text className='text-center text-white font-inter_600'>Sign Up</Text>}
+	   {loading && <ActivityIndicator size={"small"} color={"#fff"} />}
+	  </TouchableOpacity>
+	 </View>
 	</View>
-   </View>
+   </PagerView>
+  </View>
+  </View>
   </Modal>
  );
 };
