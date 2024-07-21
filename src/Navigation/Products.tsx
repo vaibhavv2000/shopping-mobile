@@ -10,12 +10,7 @@ const Products = (): JSX.Element => {
 
  return (
   <SafeAreaView className="flex-1">
-   <Drawer.Navigator
-    screenOptions={{
-     drawerStyle: {width: 0},
-     headerShown: false
-    }}
-   >
+   <Drawer.Navigator screenOptions={{ drawerStyle: {width: 0}, headerShown: false }}>
     <Drawer.Screen
      name="ProductList"
      component={ProductList}

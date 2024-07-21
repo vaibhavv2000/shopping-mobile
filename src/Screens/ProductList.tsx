@@ -78,53 +78,48 @@ const ProductList = (): JSX.Element => {
 	  </View>
 	 }
 	 renderItem={({item, index}) => (
-	  <TouchableOpacity
-	   activeOpacity={0.8}
-	   onPress={() => {
-		// @ts-ignore
-		navigation.navigate("SingleProduct", {id: item.id});
-	   }}
-	   className={`flex-1 ${index % 2 && "border-l border-gray-100"} border-b border-gray-100 flex-row items-start`}>
-	    <View className='p-2'>
-		 <Image
-		  source={{uri: item.image}}
-		  className='h-40 w-32 rounded-md'
-		  resizeMode='contain'
-		 />
+	 <TouchableOpacity
+	  activeOpacity={0.8}
+	  // @ts-ignore
+	  onPress={() => navigation.navigate("SingleProduct", {id: item.id})}
+	  className={`flex-1 ${index % 2 && "border-l border-gray-100"} border-b border-gray-100 flex-row items-start`}
+	 >
+	  <View className='p-2'>
+	   <Image source={{uri: item.image}} className='h-40 w-32 rounded-md' resizeMode='contain' />
+	  </View>
+	  <View className='py-1 flex-1 pr-2'>
+	   <View className='items-center justify-between flex-row'>
+	    <Text className='font-inter_600'>{item.product_name}</Text>
+	   </View>
+	   <Text className='font-inter_400 text-black/60'>
+	    {item.description.slice(0, 100)}...
+	   </Text>
+	   <View className='mt-1 flex-row items-center space-x-2'>
+		<Fontisto name='star' color={"#FFA900"} size={18} />
+		<Text className='font-inter_500 text-[12px]'>
+		 {item.rating}
+		</Text>
+	   </View>
+	   <View className='my-2 flex-row items-center space-x-2'>
+		<Ionicons name='pricetag' size={20} color={"limegreen"} />
+	    <Text className='font-inter_500 text-[12px]'>
+	 	 {item.price}
+	    </Text>
+	   </View>
+	   <View className='flex-row'>
+		<View className='rounded-full bg-slate-100 p-1 px-2'>
+		 <Text className='font-inter_600 text-[12px] text-gray-400'>
+	      {item.type}
+	     </Text>
 	    </View>
-		<View className='py-1 flex-1 pr-2'>
-		 <View className='items-center justify-between flex-row'>
-		  <Text className='font-inter_600'>{item.product_name}</Text>
-		 </View>
-		 <Text className='font-inter_400 text-black/60'>
-		  {item.description.slice(0, 100)}...
-		 </Text>
-		 <View className='mt-1 flex-row items-center space-x-2'>
-		  <Fontisto name='star' color={"#FFA900"} size={18} />
-		  <Text className='font-inter_500 text-[12px]'>
-			{item.rating}
-		  </Text>
-		 </View>
-		 <View className='my-2 flex-row items-center space-x-2'>
-		  <Ionicons name='pricetag' size={20} color={"limegreen"} />
-		  <Text className='font-inter_500 text-[12px]'>
-			{item.price}
-		  </Text>
-		 </View>
-		 <View className='flex-row'>
-		  <View className='rounded-full bg-slate-100 p-1 px-2'>
-		   <Text className='font-inter_600 text-[12px] text-gray-400'>
-			{item.type}
-		   </Text>
-		  </View>
-		 </View>
-		</View>
-	   </TouchableOpacity>
-	  )}
-	 />
-	</View>
+	   </View>
+	  </View>
+	 </TouchableOpacity>
+	)}
+	/>
    </View>
-  );
+  </View>
+ );
 };
 
 export default ProductList;

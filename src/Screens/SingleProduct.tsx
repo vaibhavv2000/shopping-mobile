@@ -67,7 +67,7 @@ const SingleProduct = (): JSX.Element => {
 	productId: id,
 	del: true,
    });
-  }
+  };
  };
 
  const addToWish = async (opt: string) => {
@@ -90,11 +90,7 @@ const SingleProduct = (): JSX.Element => {
  return (
   <View className='flex-1 bg-white py-5'>
    <View style={{height: width}} className='p-5'>
-	<Image
-	 source={{uri: product?.image}}
-	 className='h-full w-full'
-	 resizeMode='cover'
-	/>
+	<Image source={{uri: product?.image}} className='h-full w-full' resizeMode='cover' />
    </View>
    <View className='p-2'>
 	<View className='flex-row items-center justify-between pr-5'>

@@ -27,7 +27,8 @@ const WishList = (): JSX.Element => {
  return (
   <View className="flex-1 bg-white">
    <DrawerOpen />
-   {!isAuth ? <NotAuth /> : (wishlist.length < 1 ? <NotAuth title="Empty List" /> : <><ScrollView showsVerticalScrollIndicator={false} className="flex-1 bg-white">
+   {!isAuth ? <NotAuth /> : (wishlist.length < 1 ? <NotAuth title="Empty List" /> : <>
+   <ScrollView showsVerticalScrollIndicator={false} className="flex-1 bg-white">
    <View className="flex-1 bg-white flex-row flex-wrap p-2">
     {wishlist.map((p,index) => ( 
     <View key={`wish-${index}`}
