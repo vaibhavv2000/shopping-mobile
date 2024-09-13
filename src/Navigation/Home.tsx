@@ -4,22 +4,19 @@ import MyOrder from "../Screens/MyOrder";
 import CustomDrawer from "../Components/custom/CustomDrawer";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useQuery} from "@tanstack/react-query";
-import {API} from "../utils/API";
+import {API} from "../lib/API";
 import {useEffect} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {AppDispatch, RootState} from "../Redux/store";
-import {addProducts} from "../Redux/Slices/productSlice";
-import {addDetails, setDataFetched} from "../Redux/Slices/userSlice";
+import {addDetails, addProducts} from "../Redux/productSlice";
 import WishList from "../Screens/WishList";
 import OrderHistory from "../Screens/OrderHistory";
+import {useAppDispatch, useAppSelector} from "../lib/redux";
 
 const Drawer = createDrawerNavigator();
 
 const Home = () => {
- const {user, isAuth} = useSelector((state: RootState) => state.auth);
- const {products} = useSelector((state: RootState) => state.product);
- const {isDataFetched} = useSelector((state: RootState) => state.user);
- const dispatch: AppDispatch = useDispatch();
+ const {user} = useAppSelector(state => state.user);
+ const {products} = useAppSelector(state => state.product);
+ const dispatch = useAppDispatch();
 
  const {refetch, data,} = useQuery({
   queryKey: ["products"],
@@ -42,26 +39,20 @@ const Home = () => {
  });
 
  useEffect(() => {
-  if(!products.length) refetch();
+  if(!data && !products.length) refetch();
  }, [products]);
 
  useEffect(() => {
-  if(!isDataFetched && isAuth) fetchUserData();
- }, [isDataFetched, isAuth]);
- 
- useEffect(() => {
-  if(data) dispatch(addProducts(data));
+  if(!products.length && data) dispatch(addProducts(data));  
  }, [data]);
- 
+
  useEffect(() => {
-  if(!isDataFetched && userData && isAuth) {
-   const order_history = userData?.historylist;
-   const wishlist = userData?.wishlist;
-   const my_orders = userData?.orderlist;
-   dispatch(addDetails({order_history, wishlist, my_orders}));
-   dispatch(setDataFetched());
-  };
- }, [userData, isDataFetched, isAuth]);
+  if(!user.email) fetchUserData();
+ }, [user]);
+
+ useEffect(() => {
+  if(userData && user.email) dispatch(addDetails(userData))
+ }, [userData, user]);
 
  return (
   <SafeAreaView style={{flex: 1}}>

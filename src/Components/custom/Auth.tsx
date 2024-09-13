@@ -9,18 +9,15 @@ import {
 import {View,Text,Modal} from "react-native";
 import PagerView from "react-native-pager-view";
 import Feather from "react-native-vector-icons/Feather";
-import {AppDispatch,RootState} from "../../Redux/store";
-import {useDispatch,useSelector} from "react-redux";
-import {API} from "../../utils/API";
+import {API} from "../../lib/API";
+import {login as loginUser, toggleAuthModal} from "../../Redux/userSlice"
 import * as SecureStore from "expo-secure-store";
-import {
- login as login_user,
- toggleShowAuth,
-} from "../../Redux/Slices/authSlice";
+import {useAppDispatch, useAppSelector} from "../../lib/redux";
+import {validateEmail} from "../../utils/emailValidator";
 
-let input = "p-3 border border-gray-300 w-full font-inter_400 rounded-sm";
+let input = "p-3 border border-gray-300 w-full font-inter/400 rounded-sm";
 
-const Auth = (): JSX.Element => {
+const Auth = () => {
  const [currentPage,setCurrentPage] = useState<number>(0);
  const [register,setRegister] = useState({
   name: "",
@@ -37,8 +34,8 @@ const Auth = (): JSX.Element => {
  const [showLoginPwd, setShowLoginPwd] = useState(false);
  const [showRegisterPwd, setShowRegisterPwd] = useState(false);
 
- const {showAuth} = useSelector((state: RootState) => state.auth);
- const dispatch: AppDispatch = useDispatch();
+ const {showAuthModal} = useAppSelector(state => state.user);
+ const dispatch = useAppDispatch();
 
  useEffect(() => {
   if(loginError) setTimeout(() => setLoginError(""),5000);
@@ -52,55 +49,66 @@ const Auth = (): JSX.Element => {
   try {
    if(currentPage === 1) {
 	const {email,name,password} = register;
+
 	if(!name || !email || !password) return setRegisterError("All fields are necessary");
+	if(name.length < 3) return setRegisterError("Name should have atleast 3 characters");
+	if(!validateEmail(email)) return setRegisterError("Invalid Email");
+	if(password.length < 8) return setRegisterError("Password must  be atleast 8 characters");
+	if(password.includes(" ")) return setRegisterError("Password should not include spaces");
 
 	const res = await API.post(`/auth/register`,register);
-	await SecureStore.setItemAsync("shopping-user",JSON.stringify(res.data.user));
-	dispatch(login_user(res.data.user));
+	await SecureStore.setItemAsync("shopping-token", res.data.token);
+	dispatch(loginUser(res.data.user));
     ToastAndroid.show("Registered Successfully",ToastAndroid.LONG);
-	dispatch(toggleShowAuth(false));
+	dispatch(toggleAuthModal());
    } else {
 	const {email,password} = login;
-	if(!email || !password) return setLoginError("All fields are necessary");
-	const res = await API.post(`/auth/login`,login);
-	await SecureStore.setItemAsync("shopping-user",JSON.stringify(res.data.user));
 
-	dispatch(login_user(res.data.user));
+	if(!email || !password) return setLoginError("All fields are necessary");
+	if(!validateEmail(email)) return setLoginError("Invalid Email");
+	if(password.length < 8) return setLoginError("Password must  be atleast 8 characters");
+	if(password.includes(" ")) return setLoginError("Password should not include spaces");
+
+	const res = await API.post(`/auth/login`,login);
+	await SecureStore.setItemAsync("shopping-token", res.data.token);
+
+	dispatch(loginUser(res.data.user));
 	ToastAndroid.show("Logged In Successfully",ToastAndroid.LONG);
-	dispatch(toggleShowAuth(false));
+	dispatch(toggleAuthModal());
    };
   } catch(error: any) {
-   if(currentPage === 1) setRegisterError(error.response.data.message);
-   else setLoginError(error.response.data.message);
+   const message = error?.response?.data?.message || error?.message;	
+   if(currentPage === 1) setRegisterError(message);
+   else setLoginError(message);
   } finally {
    setLoading(false);
   };
  };
 
  const handleLogin = (val: string, type: string) => {
-  setLogin((p) => ({...p,[type]: val}));
+  setLogin((prev) => ({...prev,[type]: val}));
  };
 
  const handleRegister = (val: string, type: string) => {
-  setRegister((p) => ({...p,[type]: val}));
+  setRegister((prev) => ({...prev,[type]: val}));
  };
 
  return (
-  <Modal visible={showAuth} transparent animationType='slide'>
+  <Modal visible={showAuthModal} transparent animationType='slide'>
    <View className='flex-1' style={{backgroundColor: "rgba(0,0,0,0.1)"}}>
-	<Pressable className='flex-1' onPress={() => dispatch(toggleShowAuth(false))}></Pressable>
+	<Pressable className='flex-1' onPress={() => dispatch(toggleAuthModal())}></Pressable>
 	<View className='bg-white dark:bg-black rounded-tr-[30px] rounded-tl-[30px] p-2'>
  	 <View className='flex-row py-4'>
-	  <Text className='font-inter_600 text-lg pl-6 flex-1 text-black/70'>
+	  <Text className='font-inter/600 text-lg pl-6 flex-1 text-black/70'>
 	   Please SignIn first
 	  </Text>
-	 <Feather name='x' size={28} color={"#777"} onPress={() => dispatch(toggleShowAuth(false))} />
+	 <Feather name='x' size={28} color={"#777"} onPress={() => dispatch(toggleAuthModal())} />
 	</View>
 	<View className='flex-row items-center relative'>
-	<Text className={`flex-1 p-4 text-center font-inter_600 ${currentPage === 0 && "bg-gray-50"}`}>
+	<Text className={`flex-1 p-4 text-center font-inter/600 ${currentPage === 0 && "bg-gray-50"}`}>
 	 Login
 	</Text>
-	<Text className={`flex-1 p-4 text-center font-inter_600 ${currentPage === 1 && "bg-gray-50"}`}>
+	<Text className={`flex-1 p-4 text-center font-inter/600 ${currentPage === 1 && "bg-gray-50"}`}>
      Sign Up
 	</Text>
 	<View className={`absolute w-[50%] bottom-0 h-0.5`}
@@ -136,13 +144,13 @@ const Auth = (): JSX.Element => {
 	   {showLoginPwd ? <Feather name="eye" size={20} color={"#999"} /> : <Feather name="eye-off" size={20} color={"#999"} />}
 	  </Pressable>
 	 </View>
-	 {loginError && <Text className='font-inter_500 text-red-500'>{loginError}</Text>}
+	 {loginError && <Text className='font-inter/500 text-red-500'>{loginError}</Text>}
  	 <TouchableOpacity
  	  className='p-4 rounded-md shadow-lg flex-row justify-center space-x-2'
 	  style={{backgroundColor: "rgb(82, 137, 192)"}}
 	  onPress={handleSubmit}
 	 >
-	  {!loading && <Text className='text-center text-white font-inter_600'>Login</Text>}
+	  {!loading && <Text className='text-center text-white font-inter/600'>Login</Text>}
 	  {loading && <ActivityIndicator size={"small"} color={"#fff"} />}
 	 </TouchableOpacity>
      </View>
@@ -179,13 +187,13 @@ const Auth = (): JSX.Element => {
 	   {showRegisterPwd ? <Feather name="eye" size={20} color={"#999"} /> : <Feather name="eye-off" size={20} color={"#999"} />}
 	  </Pressable>
 	  </View>
-	  {registerError && <Text className='font-inter_500 text-red-500'>{registerError}</Text>}
+	  {registerError && <Text className='font-inter/500 text-red-500'>{registerError}</Text>}
 	  <TouchableOpacity
  	   className='p-4 rounded-md shadow-lg'
 	   style={{backgroundColor: "rgb(82, 137, 192)"}}
 	   onPress={handleSubmit}
 	  > 
-	   {!loading && <Text className='text-center text-white font-inter_600'>Sign Up</Text>}
+	   {!loading && <Text className='text-center text-white font-inter/600'>Sign Up</Text>}
 	   {loading && <ActivityIndicator size={"small"} color={"#fff"} />}
 	  </TouchableOpacity>
 	 </View>

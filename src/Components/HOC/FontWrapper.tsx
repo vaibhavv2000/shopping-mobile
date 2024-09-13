@@ -13,9 +13,10 @@ import {
 import {ReactNode,useEffect} from "react";
 import {ActivityIndicator} from "react-native";
 import * as SecureStore from "expo-secure-store";
-import {AppDispatch} from "../../Redux/store";
+import {AppDispatch} from "../../lib/store";
 import {useDispatch} from "react-redux";
-import {login,toggleDarkMode} from "../../Redux/Slices/authSlice";
+import {login} from "../../Redux/userSlice";
+import {API} from "../../lib/API";
 
 const FontWrapper = ({children}: {children: ReactNode}) => {
  let [fontsLoaded] = useFonts({
@@ -34,11 +35,15 @@ const FontWrapper = ({children}: {children: ReactNode}) => {
 
  useEffect(() => {
   async function checkAuth() {
-   const user = await SecureStore.getItemAsync("shopping-user");
-   const darkMode = await SecureStore.getItemAsync("shopping-darkmode");
-
-   if(user) dispatch(login(JSON.parse(user)));
-   if(darkMode) dispatch(toggleDarkMode("yes"));
+   try {
+    const token = await SecureStore.getItemAsync("shopping-token");
+    if(!token) return;
+    
+    const res = await API.get(`/auth/checkauth`);
+    dispatch(login(res.data));
+   } catch (error) {
+    SecureStore.deleteItemAsync("shopping-token");
+   };
   };
 
   checkAuth();

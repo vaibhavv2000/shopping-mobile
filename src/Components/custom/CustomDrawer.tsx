@@ -8,22 +8,23 @@ import {
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import {useDispatch,useSelector} from "react-redux";
-import {AppDispatch,RootState} from "../../Redux/store";
+import {AppDispatch,RootState} from "../../lib/store";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import Foundation from "react-native-vector-icons/Foundation";
-import {logout,toggleShowAuth} from "../../Redux/Slices/authSlice";
 import * as SecureStore from "expo-secure-store";
 import {useNavigation} from "@react-navigation/native";
-import {emptyData} from "../../Redux/Slices/userSlice";
+import {useAppSelector} from "../../lib/redux";
+import {logout, toggleAuthModal} from "../../Redux/userSlice";
+import {emptyData} from "../../Redux/productSlice";
 
 let link = "flex-row items-center space-x-6 p-4 pl-3";
 let holder = "h-6 w-6 justify-center items-center";
-let text = "font-inter_500 text-[14px] text-black/80";
+let text = "font-inter/500 text-[14px] text-black/80";
 
 const CustomDrawer = (props: any) => {
- const {isAuth, user, isDarkMode} = useSelector((state: RootState) => state.auth);
+ const {user, isDarkMode} = useAppSelector(state => state.user);
 
  const {height} = useWindowDimensions();
  const dispatch: AppDispatch = useDispatch();
@@ -52,12 +53,12 @@ const CustomDrawer = (props: any) => {
 	   )}
 	  </TouchableOpacity>
 	 </View>
-	 <Text className='font-inter_500 text-white text-lg pl-2'>
-	  Hello, {isAuth ? user.name : "Guest"}
+	 <Text className='font-inter/500 text-white text-lg pl-2'>
+	  Hello, {user?.name || "Guest"}
 	 </Text>
 	</View>
 	
-	<View className='flex-1 dark:bg-dark_2'>
+	<View className='flex-1 dark:bg-darkSecondary'>
 	 <Pressable
 	  className={link}
 	  android_ripple={{color: "#e7e4e4"}}
@@ -135,7 +136,7 @@ const CustomDrawer = (props: any) => {
 	  <Text className={text}>Coupon</Text>
 	 </Pressable>
 	
-	 {isAuth && (
+	 {user.email && (
 	 <Pressable
 	  className={link}
 	  android_ripple={{color: "#e7e4e4"}}
@@ -146,11 +147,11 @@ const CustomDrawer = (props: any) => {
 	  <Text className={text}>Logout</Text>
  	 </Pressable>
 	)}
-	{!isAuth && (
+	{!user.email && (
 	<Pressable
 	  className={link}
 	  android_ripple={{color: "#e7e4e4"}}
-	  onPress={() => dispatch(toggleShowAuth(true))}>
+	  onPress={() => dispatch(toggleAuthModal())}>
 	  <View className={holder}>
 	    <FontAwesome5 name='sign-in-alt' size={22} color={"#888"} />
 	  </View>

@@ -1,32 +1,29 @@
 import {useNavigation, useRoute} from "@react-navigation/native";
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {View, Text, FlatList, Image} from "react-native";
-import {product} from "../Redux/Slices/productSlice";
-import {useSelector} from "react-redux";
-import {RootState} from "../Redux/store";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Fontisto from "react-native-vector-icons/Fontisto";
 import {TouchableOpacity} from "react-native";
 import Filter from "../Components/ProductList/Filter";
+import type {product} from "../utils/types";
+import {useAppSelector} from "../lib/redux";
 
 const ProductList = (): JSX.Element => {
  const [products, setProducts] = useState<product[]>([]);
- const [title, setTitle] = useState<string>("");
+ const [title, setTitle] = useState("");
  const [list, setList] = useState<product[]>([]);
    
- const [rating, setRating] = useState<number>(0);
- const [order, setOrder] = useState<string>("");
- const [showFilter, setShowFilter] = useState<boolean>(false);
+ const [rating, setRating] = useState(0);
+ const [order, setOrder] = useState("");
+ const [showFilter, setShowFilter] = useState(false);
    
  const navigation = useNavigation();
  const {type} = useRoute().params as {type: string};
    
- const allProducts = useSelector((state: RootState) => state.product.products);
-   
- const {isDarkMode} = useSelector((state: RootState) => state.auth);
+ const allProducts = useAppSelector(state => state.product.products);
    
  useEffect(() => {
-  const filter = [...allProducts].filter((p) => p.type === type);
+  const filter = [...allProducts].filter((product) => product.type === type);
    
   setProducts(filter);
   setList(filter);
@@ -39,13 +36,12 @@ const ProductList = (): JSX.Element => {
  }, [type]);
    
  useEffect(() => {
-  if (order === "Ascending") setProducts((p) => [...p.sort((a, b) => a.price - b.price)]);
-  if (order === "Descending") setProducts((p) => [...p.sort((a, b) => b.price - a.price)]);
+  if (order === "Ascending") setProducts(prev => [...prev.sort((a, b) => a.price - b.price)]);
+  if (order === "Descending") setProducts(prev => [...prev.sort((a, b) => b.price - a.price)]);
  }, [order]);
    
  useEffect(() => {
-  const filter = [...list].filter((p) => p.rating >= rating);
-  setProducts(filter);
+  setProducts([...list].filter((item) => item.rating >= rating));
  }, [rating, list]);
    
  return (
@@ -63,11 +59,11 @@ const ProductList = (): JSX.Element => {
 	<FlatList
 	 data={products}
 	 extraData={allProducts}
-	 keyExtractor={(item, index) => String(index)}
+	 keyExtractor={(_, index) => String(index)}
 	 ListHeaderComponent={
-	  <View className='flex-row items-center justify-between pr-4'>
-	   <Text className='dark:text-white/90 text-xl font-inter_600 p-1 pl-2 text-black/80'>
-		 {title}
+	  <View className='flex-row items-center justify-between p-2 pr-4'>
+	   <Text className='dark:text-white/90 text-xl font-inter/600 p-1 pl-2 text-black/80'>
+		{title}
 	   </Text>
 	   <Fontisto
 		 name='filter'
@@ -89,26 +85,26 @@ const ProductList = (): JSX.Element => {
 	  </View>
 	  <View className='py-1 flex-1 pr-2'>
 	   <View className='items-center justify-between flex-row'>
-	    <Text className='font-inter_600'>{item.product_name}</Text>
+	    <Text className='font-inter/600'>{item.title}</Text>
 	   </View>
-	   <Text className='font-inter_400 text-black/60'>
+	   <Text className='font-inter/400 text-black/60'>
 	    {item.description.slice(0, 100)}...
 	   </Text>
 	   <View className='mt-1 flex-row items-center space-x-2'>
 		<Fontisto name='star' color={"#FFA900"} size={18} />
-		<Text className='font-inter_500 text-[12px]'>
+		<Text className='font-inter/500 text-[12px]'>
 		 {item.rating}
 		</Text>
 	   </View>
 	   <View className='my-2 flex-row items-center space-x-2'>
 		<Ionicons name='pricetag' size={20} color={"limegreen"} />
-	    <Text className='font-inter_500 text-[12px]'>
+	    <Text className='font-inter/500 text-[12px]'>
 	 	 {item.price}
 	    </Text>
 	   </View>
 	   <View className='flex-row'>
 		<View className='rounded-full bg-slate-100 p-1 px-2'>
-		 <Text className='font-inter_600 text-[12px] text-gray-400'>
+		 <Text className='font-inter/600 text-[12px] text-gray-400'>
 	      {item.type}
 	     </Text>
 	    </View>

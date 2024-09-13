@@ -1,43 +1,39 @@
-import React,{useEffect,useState} from "react";
+import {useEffect,useState} from "react";
 import {View,Text,ScrollView} from "react-native";
 import Octicons from "react-native-vector-icons/Octicons";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import {DrawerActions,useNavigation} from "@react-navigation/native";
-import {useSelector} from "react-redux";
-import {RootState} from "../Redux/store";
-import {product} from "../Redux/Slices/productSlice";
 import List from "../Components/Feed/List";
 import SlideImages from "../Components/Feed/SlideImages";
+import type {product} from "../utils/types";
+import {useAppSelector} from "../lib/redux";
 
-const Feed = (): JSX.Element => {
+const Feed = () => {
  const [randomProducts,setRandomProducts] = useState<product[]>([]);
  const [watches,setWatches] = useState<product[]>([]);
  const [mobiles,setMobiles] = useState<product[]>([]);
  const [clothes,setClothes] = useState<product[]>([]);
 
  const navigation = useNavigation()
- const {products} = useSelector((state: RootState) => state.product);
+ const {products} = useAppSelector(state => state.product);
 
  useEffect(() => {
-  const list = [...products];
-  const random = list.sort((a,b) => Math.random() - 0.5).slice(0,4);
-  setRandomProducts(random);
+  setRandomProducts([...products].sort(() => Math.random() - 0.5).slice(0,4));
  }, [products]);
 
  useEffect(() => {
-  const list = [...products];
   const pro = (type: "watch" | "clothes" | "mobile") => {
-   return list.filter((m) => m.type === type).sort((a,b) => Math.random() - 0.5).slice(0,4);
+   return products.filter((item) => item.type === type).sort(() => Math.random() - 0.5).slice(0,4);
   };
 
-  const w = pro("watch");
-  const c = pro("clothes");
-  const m = pro("mobile");
+  const watches = pro("watch");
+  const clothes = pro("clothes");
+  const mobilesData = pro("mobile");
 
   if(mobiles.length < 1) {
-   setWatches(w);
-   setClothes(c);
-   setMobiles(m);
+   setWatches(watches);
+   setClothes(clothes);
+   setMobiles(mobilesData);
   };
  }, [products]);
 
@@ -57,7 +53,7 @@ const Feed = (): JSX.Element => {
 	   color={"#fff"}
 	   onPress={openDrawer}
 	  />
-	  <Text className='text-white font-inter_700 text-xl'>
+	  <Text className='text-white font-inter/700 text-xl'>
 	   ShoppingCart
  	  </Text>
      </View>

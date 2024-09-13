@@ -1,44 +1,39 @@
 import {useState,useEffect} from "react";
 import {View,Text,TouchableOpacity,Image,ScrollView} from "react-native";
-import {useDispatch,useSelector} from "react-redux";
-import {AppDispatch,RootState} from "../Redux/store";
 import NotAuth from "../Components/custom/NotAuth";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Fontisto from "react-native-vector-icons/Fontisto";
-import {removeFromBag,changeQuantity,addToHistory,emptyBag} from "../Redux/Slices/userSlice";
-import {API} from "../utils/API";
+import {API} from "../lib/API";
 import {useNavigation} from "@react-navigation/native";
 import Entypo from "react-native-vector-icons/Entypo";
 import DrawerOpen from "../Components/custom/DrawerOpen";
+import {addToHistory, changeQuantity, emptyBag, removeFromBag} from "../Redux/productSlice";
+import {useAppDispatch, useAppSelector} from "../lib/redux";
 
-const MyOrders = (): JSX.Element => {
- const [totalPrice,setTotalPrice] = useState<number>(0);
- const {my_orders} = useSelector((state: RootState) => state.user);
- const {isAuth,user} = useSelector((state: RootState) => state.auth);
+const MyOrders = () => {
+ const [totalPrice,setTotalPrice] = useState(0);
+ const {myOrders} = useAppSelector(state => state.product);
+ const {user} = useAppSelector(state => state.user);
 
- const dispatch: AppDispatch = useDispatch();
+ const dispatch = useAppDispatch();
  const navigation = useNavigation();
 
  const removeFromOrder = async (id: number) => {
   dispatch(removeFromBag((id)));
-  await API.post("/product/removefromorder",{
-   userId: user.id,
-   productId: id,
-   del: true,
-  });
+  await API.delete(`/product/removefromorder?id=${id}&del=true`);
  };
 
  useEffect(() => {
   let total = 0;
-  for(let order of my_orders) {
+  for(let order of myOrders) {
    const price = order.quantity * order.price;
    total += price;
   };
 
   setTotalPrice(total);
- },[my_orders]);
+ },[myOrders]);
 
- const changeProductQuantity = async (id: number,opt: "incr" | "decr",pId: number) => {
+ const changeProductQuantity = async (id: number,opt: "incr" | "decr") => {
   const data = {opt,id};
 
   try {
@@ -46,8 +41,7 @@ const MyOrders = (): JSX.Element => {
 	dispatch(changeQuantity(data));
 	await API.post("/product/addorder",{
 	 productId: id,
-	 userId: user.id,
-	 incr: true
+	 incr: true,
 	});
    };
 
@@ -55,8 +49,7 @@ const MyOrders = (): JSX.Element => {
 	dispatch(changeQuantity(data));
 	await API.post("/product/addorder",{
 	 productId: id,
-	 userId: user.id,
-	 decr: true
+	 decr: true,
 	});
    };
   } catch(error) {
@@ -68,7 +61,7 @@ const MyOrders = (): JSX.Element => {
   try {
    const res = await API.post("/product/confirmorder",{userId: user.id});
    const data = await res.data;
-   dispatch(addToHistory(my_orders));
+   dispatch(addToHistory(myOrders));
    dispatch(emptyBag());
    setTotalPrice(0);
   } catch(error) {
@@ -79,11 +72,11 @@ const MyOrders = (): JSX.Element => {
  return (
   <View className='flex-1 bg-white pb-2'>
    <DrawerOpen />
-   {!isAuth ? <NotAuth /> : (my_orders.length < 1 ? <NotAuth title="Empty Bag" /> : <><ScrollView
+   {!user ? <NotAuth /> : (myOrders.length < 1 ? <NotAuth title="Empty Bag" /> : <><ScrollView
 	showsVerticalScrollIndicator={false}
 	className='flex-1 bg-white'
    >
-	{my_orders.map((item,index) => (
+	{myOrders.map((item,index) => (
 	<TouchableOpacity
 	 activeOpacity={0.8}
 	 key={`order-${index}`}
@@ -102,29 +95,31 @@ const MyOrders = (): JSX.Element => {
 	 </TouchableOpacity>
 	 <View className='py-1 flex-1 pr-2'>
 	  <View className='items-center justify-between flex-row'>
-	   <Text className='font-inter_600'>{item.product_name}</Text>
+	   <Text className='font-inter/600'>{item.title}</Text>
 	  </View>
-	  <Text className='font-inter_400 text-black/60'>
+	  <Text className='font-inter/400 text-black/60'>
 	   {item.description.slice(0,50)}...
 	  </Text>
 	  <View className='mt-1 flex-row items-center space-x-2'>
 	   <Fontisto name='star' color={"#9b77f0"} size={18} />
-	   <Text className='font-inter_600 text-[12px]'>
+	   <Text className='font-inter/600 text-[12px]'>
 		{item.rating}
 	   </Text>
 	  </View>
 	  <View className='my-2 flex-row items-center space-x-2'>
 	   <Ionicons name='pricetag' size={20} color={"limegreen"} />
-	   <Text className='font-inter_600 text-[12px]'>{item.price}</Text>
+	   <Text className='font-inter/600 text-[12px]'>{item.price}</Text>
 	  </View>
 	  <View className='flex-row items-center space-x-2 py-2'>
 	   <TouchableOpacity className='h-7 w-7 bg-black justify-center items-center'>
 		<Entypo name='minus' size={24} color={"#fff"} 
-		 onPress={() => changeProductQuantity(item.id,"decr",item)} />
+		 onPress={() => changeProductQuantity(item.id,"decr")} />
 	   </TouchableOpacity>
 	   <Text>{item?.quantity}</Text>
 	   <TouchableOpacity className='h-7 w-7 bg-black justify-center items-center'>
-		<Entypo name='plus' size={22} color={"#fff"} onPress={() => changeProductQuantity(item.id,"incr",item)} />
+		<Entypo name='plus' size={22} color={"#fff"} 
+		 onPress={() => changeProductQuantity(item.id,"incr")} 
+		/>
 	   </TouchableOpacity>
 	  </View>
 	  <View className='flex-row justify-end pt-2'>
@@ -132,7 +127,7 @@ const MyOrders = (): JSX.Element => {
 		className='rounded-md bg-blue-500 p-2'
 		onPress={() => removeFromOrder(item.id)}
 	   >
-		<Text className='font-inter_600 text-white'>
+		<Text className='font-inter/600 text-white'>
 		 Remove From Orders
 		</Text>
 	   </TouchableOpacity>
@@ -143,19 +138,19 @@ const MyOrders = (): JSX.Element => {
 	</ScrollView>
 	<View className='flex-row bg-white items-center w-full p-1 absolute bottom-1 space-x-2'>
 	 <View>
-	  <Text className='font-inter_400 text-sm'>Total</Text>
-	  <Text className='font-inter_600 text-2xl'>{totalPrice}</Text>
+	  <Text className='font-inter/400 text-sm'>Total</Text>
+	  <Text className='font-inter/600 text-2xl'>{totalPrice}</Text>
 	 </View>
 	 <View className='flex-1'>
 	  <TouchableOpacity className='bg-black p-3 rounded-md' onPress={checkout}>
-	   <Text className='text-center text-white text-[16px] font-inter_700'>
+	   <Text className='text-center text-white text-[16px] font-inter/700'>
 	    Checkout
 	   </Text>
 	  </TouchableOpacity>
 	 </View>
     </View>
-	</>)}
-   </View>
+   </>)}
+  </View>
  );
 };
 

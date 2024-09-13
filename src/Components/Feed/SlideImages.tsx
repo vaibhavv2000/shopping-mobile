@@ -1,4 +1,4 @@
-import React,{memo,useEffect,useRef,useState} from "react";
+import {memo,useEffect,useRef,useState} from "react";
 import {View,Image,useWindowDimensions} from "react-native";
 import PagerView from "react-native-pager-view";
 
@@ -6,8 +6,8 @@ const images = imageList();
 
 const SlideImages = () => {
  const {width} = useWindowDimensions();
- const [currentSlide,setCurrentSlide] = useState<number>(0);
- const [dir,setDir] = useState<"left" | "right">("right");
+ const [currentSlide,setCurrentSlide] = useState(0);
+ const [direction,setDirection] = useState<"left" | "right">("right");
 
  const pagerRef = useRef<PagerView>(null);
 
@@ -17,23 +17,23 @@ const SlideImages = () => {
 
  useEffect(() => {
   const timer = setInterval(() => {
-   if(dir === "right") setCurrentSlide(currentSlide + 1);
-   if(dir === "left") setCurrentSlide(currentSlide - 1);
+   if(direction === "right") setCurrentSlide(currentSlide + 1);
+   if(direction === "left") setCurrentSlide(currentSlide - 1);
   }, 4000);
 
-  if(currentSlide > 1) setDir("left");
-  if(currentSlide < 1) setDir("right");
+  if(currentSlide > 1) setDirection("left");
+  if(currentSlide < 1) setDirection("right");
 
   return () => clearInterval(timer);
- }, [currentSlide,dir]);
+ }, [currentSlide, direction]);
 
  return (
   <View className="bg-red-800" style={{height: width}}>
    <PagerView initialPage={0} className="bg-red-200 h-full" ref={pagerRef}>
     {images.map((item,index) => (
-     <View key={`slide-img-${index}`}>
-      <Image source={{uri: item}} className="h-full w-full" />
-     </View>
+    <View key={`slide-img-${index}`}>
+     <Image source={{uri: item}} className="h-full w-full" />
+    </View>
     ))}
    </PagerView>
   </View>

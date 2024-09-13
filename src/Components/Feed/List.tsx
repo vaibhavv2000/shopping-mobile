@@ -1,10 +1,9 @@
 import {memo} from "react";
-import {Image, Platform} from "react-native";
+import {Image} from "react-native";
 import {View, Text} from "react-native";
-import {product} from "../../Redux/Slices/productSlice";
-import {Pressable} from "react-native";
 import {TouchableOpacity} from "react-native-gesture-handler";
 import {useNavigation} from "@react-navigation/native";
+import type {product} from "../../utils/types";
 
 interface props {
  title: string;
@@ -19,37 +18,20 @@ function List(props: props) {
  return (
   <View className={bg}>
    <View className={`p-2`}>
-	<Text className={`text-xl font-inter_600 pl-5 text-black ${bg && "/50"}`}>
+	<Text className={`text-xl font-inter/600 pl-5 text-black ${bg && "/50"}`}>
 	 {title}
 	</Text>
 	<View className='flex-wrap flex-row justify-center'>
-	 {products.map((p) =>
-	  Platform.OS === "android" ? (
-	   <Pressable
-		key={String(`${title}${Math.random()}`)}
-		android_ripple={{color: "rgba(0,0,0,0.07777)"}}
-		// @ts-ignore
-		onPress={() =>navigation.navigate("Products",{type: p.type})}
-	   >
-		<Image
-		 source={{uri: p.image}}
-		 className='h-40 w-40 m-1.5 rounded-md'
-		 resizeMode='contain'
-		/>
-	   </Pressable>
-	 ) : (
-	   <TouchableOpacity
-		key={String(`${title}${Math.random()}`)}
-		activeOpacity={0.8}
-		// @ts-ignore
-		onPress={() => navigation.navigate("Products",{type: p.type})}
-	   >
-		<Image
-		 source={{uri: p.image}}
-		 className='h-40 w-40 m-1.5 rounded-md'
-		/>
-	   </TouchableOpacity>
-	 )
+	 {products.map((product) => (
+	  <TouchableOpacity
+	   key={`product-list-${product.id}`}
+	   activeOpacity={0.8}
+	   // @ts-ignore
+	   onPress={() => navigation.navigate("Products",{type: product.type})}
+	  >
+	   <Image source={{uri: product.image}} className='h-40 w-40 m-1 rounded-md'/>
+	  </TouchableOpacity>
+	   )
       )}
     </View>
    </View>
